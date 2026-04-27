@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import API from '../api/axios'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import Navbar from '../components/Navbar'
 
 const DUMMY_PRODUCTS = [
   { _id: '1', title: 'Data Structures Textbook', description: 'Cormen CLRS 3rd edition. Used for 1 semester, excellent condition. Perfect for CS students preparing for placements.', price: 280, category: 'books', productType: 'physical', imageUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=300&fit=crop', seller: { college: 'GTU' } },
@@ -36,42 +37,8 @@ export default function Home() {
   return (
     <div style={{ fontFamily: "'Playfair Display', sans-serif", minHeight: '100vh', background: '#f8f7f4' }}>
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
-
-      {/* ───── NAVBAR ───── */}
-      <nav style={{ background: '#fff', borderBottom: '1px solid #e8e4dc', padding: '0 2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '60px', position: 'sticky', top: 0, zIndex: 100 }}>
-
-        {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{ width: '28px', height: '28px', background: '#2563eb', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ color: '#fff', fontSize: '14px' }}>🎓</span>
-          </div>
-          <span style={{ fontFamily: "'Playfair Display', sans-serif", fontWeight: 800, fontSize: '18px', color: '#1a1a1a' }}>CampusMart</span>
-        </div>
-
-        {/* Nav right side */}
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          {user ? (
-            <>
-              <span style={{ fontSize: '13px', color: '#666' }}>👋 {user.name}</span>
-              <Link to="/sell" style={{ fontSize: '13px', color: '#fff', textDecoration: 'none', padding: '7px 16px', background: '#2563eb', borderRadius: '8px', fontWeight: 500 }}>
-                + Sell
-              </Link>
-              <button onClick={logout} style={{ fontSize: '13px', color: '#666', background: 'none', border: '1px solid #ddd', padding: '7px 14px', borderRadius: '8px', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <Link to="/login" style={{ fontSize: '13px', color: '#374151', textDecoration: 'none', padding: '7px 16px', border: '1px solid #e5e7eb', borderRadius: '8px', fontWeight: 500 }}>
-                Login
-              </Link>
-              <Link to="/register" style={{ fontSize: '13px', color: '#fff', textDecoration: 'none', padding: '7px 16px', background: '#2563eb', borderRadius: '8px', fontWeight: 600 }}>
-                Sign up free →
-              </Link>
-            </>
-          )}
-        </div>
-      </nav>
+    
+      <Navbar />
 
       {/* ───── HERO ───── */}
       <div style={{ background: 'linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%)', padding: '3.5rem 2rem', textAlign: 'center' }}>
