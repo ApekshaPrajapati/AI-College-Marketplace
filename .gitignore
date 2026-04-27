@@ -4,6 +4,7 @@ node_modules/
 # Environment variables — NEVER push these
 .env
 server/.env
+client/.env
 
 # Build files
 dist/
