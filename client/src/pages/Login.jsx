@@ -25,8 +25,8 @@ export default function Login() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0f0f0f', display: 'flex', fontFamily: "'DM Sans', sans-serif" }}>
-      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+    <div style={{ minHeight: '100vh', background: '#0f0f0f', display: 'flex', fontFamily: "'Playfair Display', sans-serif" }}>
+      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
 
       {/* Left panel */}
       <div style={{ flex: 1, background: 'linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '4rem', position: 'relative', overflow: 'hidden' }}>
@@ -62,7 +62,7 @@ export default function Login() {
 
       {/* Right panel — form */}
       <div style={{ width: '460px', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '4rem 3rem', background: '#fff' }}>
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '2rem', fontWeight: 800, color: '#0f0f0f', marginBottom: '6px' }}>Welcome back</h1>
+        <h1 style={{ fontFamily: "'Playfair Display', sans-serif", fontSize: '2rem', fontWeight: 800, color: '#0f0f0f', marginBottom: '6px' }}>Welcome back</h1>
         <p style={{ color: '#94a3b8', fontSize: '14px', marginBottom: '2rem' }}>Sign in to your account to continue</p>
 
         {error && (

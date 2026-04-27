@@ -31,14 +31,14 @@ export default function Register() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', fontFamily: "'Platfair Display', sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', fontFamily: "'Playfair Display', sans-serif" }}>
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
 
       {/* Left — form */}
       <div style={{ width: '500px', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '4rem 3.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '2.5rem' }}>
           <div style={{ width: '36px', height: '36px', background: '#2563eb', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>🎓</div>
-          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '20px', color: '#0f0f0f' }}>CampusMart</span>
+          <span style={{ fontFamily: "'Playfair Diaplay', sans-serif", fontWeight: 800, fontSize: '20px', color: '#0f0f0f' }}>CampusMart</span>
         </div>
 
         <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '2rem', fontWeight: 800, color: '#0f0f0f', marginBottom: '6px' }}>Create your account</h1>
