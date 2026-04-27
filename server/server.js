@@ -8,7 +8,7 @@ const app = express();
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    'https://campusmart.vercel.app'  // add after Vercel deploy
+    'https://ai-college-marketplace.vercel.app',  // ← your Vercel URL
   ],
   credentials: true
 }))
