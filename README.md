@@ -64,7 +64,7 @@ GROQ_API_KEY=gsk_your_groq_key
 
 ## Live Demo
 
-🔗 [Add deployed link here]
+🔗 https://ai-college-marketplace.vercel.app/
 
 ---
 
