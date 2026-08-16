@@ -75,7 +75,7 @@ router.post('/describe-file', auth, async (req, res) => {
       : `You are a helper for a college notes marketplace. Based on this filename "${fileName}", write a short listing description for college study material. Mention likely subject, topics, and which students would benefit. Max 80 words.`;
 
     const response = await groq.chat.completions.create({
-      model: 'llama-3.3-70b-versatile',
+      model: 'qwen-qwq-32b',
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 200,
     });
