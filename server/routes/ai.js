@@ -6,10 +6,13 @@ const auth = require('../middleware/auth');
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 function cleanResponse(text) {
-  return text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+  let cleaned = text.replace(/<think>[\s\S]*?<\/think>/gi, '')
+  cleaned = cleaned.replace(/<think>[\s\S]*/gi, '')
+  cleaned = cleaned.replace(/\*\*/g, '')
+  return cleaned.trim()
 }
 
-
+// AI description from IMAGE
 router.post('/describe-image', auth, async (req, res) => {
   try {
     const { imageUrl } = req.body;
@@ -21,10 +24,11 @@ router.post('/describe-image', auth, async (req, res) => {
         role: 'user',
         content: [
           { type: 'image_url', image_url: { url: imageUrl } },
-          { type: 'text', text: 'You are a helpful assistant for a college student marketplace. Look at this product image and write a short, honest, friendly listing description. Mention condition, what it is, and why a student would want it. Max 60 words. Give ONLY the description, no thinking, no explanation.' }
+          { type: 'text', text: 'You are a helpful assistant for a college student marketplace. Write a short product listing description for this image. Max 60 words. Give ONLY the final description, nothing else.' }
         ]
       }],
       max_tokens: 200,
+      reasoning_effort: 'none',
     });
 
     const description = cleanResponse(response.choices[0].message.content);
@@ -36,7 +40,7 @@ router.post('/describe-image', auth, async (req, res) => {
   }
 });
 
-
+// AI description from PDF/file
 router.post('/describe-file', auth, async (req, res) => {
   try {
     const { fileUrl } = req.body;
@@ -62,24 +66,22 @@ router.post('/describe-file', auth, async (req, res) => {
         .replace(/\s+/g, ' ')
         .trim()
         .slice(0, 1000);
-      console.log('Extracted text length:', fileContent.length);
     } catch (downloadErr) {
       console.log('Could not download file:', downloadErr.message);
       fileContent = '';
     }
 
     const prompt = fileContent.length > 50
-      ? `You are a helper for a college notes marketplace. Based on this study material content and filename "${fileName}", write a short listing description. Mention: subject name, topics covered, which semester or exam it is useful for. Max 80 words. Give ONLY the description, no thinking.\n\nContent preview: ${fileContent}`
-      : `You are a helper for a college notes marketplace. Based on this filename "${fileName}", write a short listing description for college study material. Mention likely subject, topics, and which students would benefit. Max 80 words. Give ONLY the description, no thinking.`;
+      ? `Write a short college notes marketplace listing for filename "${fileName}". Mention subject, topics, semester. Max 80 words. Only the description.\n\nContent: ${fileContent}`
+      : `Write a short college notes marketplace listing for filename "${fileName}". Mention subject, topics, semester. Max 80 words. Only the description.`
 
     const response = await groq.chat.completions.create({
-      model: 'qwen-qwq-32b',
+      model: 'llama-3.1-8b-instant',
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 200,
     });
 
     const description = cleanResponse(response.choices[0].message.content);
-    console.log('Generated description:', description);
     res.json({ description });
 
   } catch (err) {
