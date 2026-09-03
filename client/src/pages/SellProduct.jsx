@@ -57,35 +57,71 @@ export default function SellProduct() {
     setForm(f => ({ ...f, description: '' }))
   }
 
-  const generateAI = async () => {
-    if (!user) { alert('Please login first!'); navigate('/login'); return }
-    if (form.productType === 'physical' && !imageFile) {
-      alert('Please select an image first!'); return
-    }
-    if (form.productType === 'digital' && !docFile) {
-      alert('Please select a PDF file first!'); return
-    }
-
-    setLoading(true)
-    try {
-      if (form.productType === 'physical') {
-        const fd = new FormData()
-        fd.append('image', imageFile)
-        const upRes = await API.post('/upload/image', fd)
-        const aiRes = await API.post('/ai/describe-image', { imageUrl: upRes.data.imageUrl })
-        setForm(f => ({ ...f, description: aiRes.data.description, imageUrl: upRes.data.imageUrl }))
-      } else {
-        const fd = new FormData()
-        fd.append('file', docFile)
-        const upRes = await API.post('/upload/file', fd)
-        const aiRes = await API.post('/ai/describe-file', { fileUrl: upRes.data.fileUrl })
-        setForm(f => ({ ...f, description: aiRes.data.description, fileUrl: upRes.data.fileUrl }))
-      }
-    } catch (err) {
-      alert('AI failed: ' + (err.response?.data?.msg || err.message))
-    }
-    setLoading(false)
+const generateAI = async () => {
+  if (!user) { alert('Please login first!'); navigate('/login'); return }
+  if (form.productType === 'physical' && !imageFile) {
+    alert('Please select an image first!'); return
   }
+  if (form.productType === 'digital' && !docFile) {
+    alert('Please select a PDF file first!'); return
+  }
+
+  setLoading(true)
+  try {
+    if (form.productType === 'physical') {
+      const fd = new FormData()
+      fd.append('image', imageFile)
+      const upRes = await API.post('/upload/image', fd)
+      const aiRes = await API.post('/ai/describe-image', { imageUrl: upRes.data.imageUrl })
+      setForm(f => ({ ...f, description: aiRes.data.description, imageUrl: upRes.data.imageUrl }))
+
+    } else if (form.productType === 'digital') {
+      // Upload file first
+      const fd = new FormData()
+      fd.append('file', docFile)
+      const upRes = await API.post('/upload/file', fd)
+
+      // Read file content on frontend and send it directly
+      const fileText = await readFileAsText(docFile)
+
+      const aiRes = await API.post('/ai/describe-file', {
+        fileUrl: upRes.data.fileUrl,
+        fileName: docFile.name,
+        fileContent: fileText.slice(0, 1000)  // send first 1000 chars
+      })
+      setForm(f => ({ ...f, description: aiRes.data.description, fileUrl: upRes.data.fileUrl }))
+    }
+  } catch (err) {
+    console.log('Error:', err.response?.data || err.message)
+    alert('AI failed: ' + (err.response?.data?.msg || err.message))
+  }
+  setLoading(false)
+}
+
+// Add this helper function inside SellProduct component
+const readFileAsText = (file) => {
+  return new Promise((resolve) => {
+    // For PDFs — try to extract readable text
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const result = e.target.result || ''
+      // Extract only readable ASCII from PDF binary
+      const readable = result
+        .replace(/[^\x20-\x7E\n\r\t]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+      resolve(readable.slice(0, 1000))
+    }
+    reader.onerror = () => resolve('')
+
+    // Read as text for text files, as binary for PDFs
+    if (file.type === 'application/pdf') {
+      reader.readAsBinaryString(file)
+    } else {
+      reader.readAsText(file)
+    }
+  })
+}
 
   const handleSubmit = async () => {
     if (!user) { alert('Please login first!'); navigate('/login'); return }

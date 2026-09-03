@@ -44,57 +44,56 @@ router.post('/describe-image', auth, async (req, res) => {
 // AI description from PDF/file (digital product)
 router.post('/describe-file', auth, async (req, res) => {
   try {
-    const { fileUrl } = req.body;
-    if (!fileUrl) return res.status(400).json({ msg: 'No file URL provided' });
+    const { fileUrl, fileName, fileContent } = req.body
 
-    const fileName = decodeURIComponent(
+    if (!fileUrl) return res.status(400).json({ msg: 'No file URL provided' })
+
+    // Use fileName from request or extract from URL
+    const name = fileName || decodeURIComponent(
       fileUrl.split('/').pop().replace(/^\d+-/, '')
-    );
-    console.log('Filename:', fileName);
+    )
+    console.log('Filename:', name)
+    console.log('File content length:', fileContent?.length || 0)
 
-    let fileContent = '';
-    try {
-      const fileResponse = await axios.get(fileUrl, {
-        responseType: 'arraybuffer',
-        timeout: 10000
-      });
-      const buffer = Buffer.from(fileResponse.data);
-      fileContent = buffer.toString('utf-8', 0, 3000)
-        .replace(/[^\x20-\x7E\n\r\t]/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim()
-        .slice(0, 1000);
-      console.log('Extracted text length:', fileContent.length);
-    } catch (downloadErr) {
-      console.log('Could not download file:', downloadErr.message);
-      fileContent = '';
-    }
+    // Build prompt using content sent from frontend
+    const hasContent = fileContent && fileContent.trim().length > 50
+    const cleanContent = hasContent
+      ? fileContent.replace(/[^\x20-\x7E\n\r\t]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 800)
+      : ''
 
-    const prompt = fileContent.length > 50
-      ? `Write a short college notes marketplace listing description. Filename: "${fileName}". Mention subject, topics, semester. Max 80 words. Write ONLY the description.\n\nContent: ${fileContent}`
-      : `Write a short college notes marketplace listing description. The file is named "${fileName}". Guess the subject and topics from the filename. Mention which semester students would find it useful. Max 80 words. Write ONLY the description, be specific and helpful.`
+    const prompt = hasContent
+  ? `You are helping a college student sell their study notes on a marketplace. 
+Read this content from the file named "${name}" and write a detailed, helpful product listing description.
+Include: subject name, specific topics covered, which semester it is useful for, and why a student should buy it.
+Write 3-4 sentences. Be specific. Do NOT be generic.
+
+File content:
+${cleanContent}`
+  : `You are helping a college student sell their study notes on a marketplace.
+The file is named "${name}".
+Write a detailed product listing description mentioning the subject, likely topics covered, which semester it is useful for, and why a student should buy it.
+Write 3-4 sentences. Be specific. Do NOT write generic descriptions.`
 
     const response = await groq.chat.completions.create({
       model: 'openai/gpt-oss-20b',
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: 200,
-    });
+      max_tokens: 400,
+    })
 
-    console.log('Raw response:', response.choices[0].message.content)
+    let description = cleanResponse(response.choices[0].message.content)
 
-    let description = cleanResponse(response.choices[0].message.content);
-
-    // ← Fix: if description is empty use a default
     if (!description || description.length < 10) {
-      description = `Study material — ${fileName.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ')}. Useful notes for engineering students. Contact seller for more details.`
+      description = `Study notes for ${name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ')}. Useful for engineering students preparing for exams.`
     }
 
-    console.log('Final description:', description);
-    res.json({ description });
+    console.log('Description:', description)
+    console.log('File content received:', fileContent?.slice(0, 200))
+    res.json({ description })
 
   } catch (err) {
-    console.log('File AI error:', err.message);
-    res.status(500).json({ msg: err.message });
+    console.log('File AI error:', err.message)
+    res.status(500).json({ msg: err.message })
   }
-});
+})
+
 module.exports = router;
