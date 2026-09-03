@@ -9,17 +9,18 @@ function cleanResponse(text) {
   let cleaned = text.replace(/<think>[\s\S]*?<\/think>/gi, '')
   cleaned = cleaned.replace(/<think>[\s\S]*/gi, '')
   cleaned = cleaned.replace(/\*\*/g, '')
+  cleaned = cleaned.replace(/```json|```/g, '')
   return cleaned.trim()
 }
 
-// AI description from IMAGE
+// AI description from IMAGE (physical product)
 router.post('/describe-image', auth, async (req, res) => {
   try {
     const { imageUrl } = req.body;
     console.log('Describing image:', imageUrl);
 
     const response = await groq.chat.completions.create({
-      model: 'qwen/qwen3.6-27b',
+      model: 'qwen/qwen3.8-27b',        // ✅ updated vision model
       messages: [{
         role: 'user',
         content: [
@@ -40,7 +41,7 @@ router.post('/describe-image', auth, async (req, res) => {
   }
 });
 
-// AI description from PDF/file
+// AI description from PDF/file (digital product)
 router.post('/describe-file', auth, async (req, res) => {
   try {
     const { fileUrl } = req.body;
@@ -66,6 +67,7 @@ router.post('/describe-file', auth, async (req, res) => {
         .replace(/\s+/g, ' ')
         .trim()
         .slice(0, 1000);
+      console.log('Extracted text length:', fileContent.length);
     } catch (downloadErr) {
       console.log('Could not download file:', downloadErr.message);
       fileContent = '';
@@ -76,12 +78,13 @@ router.post('/describe-file', auth, async (req, res) => {
       : `Write a short college notes marketplace listing for filename "${fileName}". Mention subject, topics, semester. Max 80 words. Only the description.`
 
     const response = await groq.chat.completions.create({
-      model: 'llama-3.1-8b-instant',
+      model: 'openai/gpt-oss-20b',      // ✅ updated text model
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 200,
     });
 
     const description = cleanResponse(response.choices[0].message.content);
+    console.log('Generated description:', description);
     res.json({ description });
 
   } catch (err) {
