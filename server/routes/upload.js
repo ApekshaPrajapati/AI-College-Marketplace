@@ -25,10 +25,13 @@ const fileStorage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => ({
     folder: 'marketplace/files',
-    resource_type: 'raw',         // ← must be raw for PDFs
+    resource_type: 'raw',
+    access_mode: 'public',   // ← add this
     public_id: Date.now() + '-' + file.originalname.replace(/\s/g, '-'),
   })
 });
+
+
 
 const uploadImage = multer({ 
   storage: imageStorage,

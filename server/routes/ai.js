@@ -45,11 +45,7 @@ router.post('/describe-image', auth, async (req, res) => {
 router.post('/describe-file', auth, async (req, res) => {
   try {
     const { fileUrl } = req.body;
-    console.log('Describing file:', fileUrl);
-
-    if (!fileUrl) {
-      return res.status(400).json({ msg: 'No file URL provided' });
-    }
+    if (!fileUrl) return res.status(400).json({ msg: 'No file URL provided' });
 
     const fileName = decodeURIComponent(
       fileUrl.split('/').pop().replace(/^\d+-/, '')
@@ -63,8 +59,7 @@ router.post('/describe-file', auth, async (req, res) => {
         timeout: 10000
       });
       const buffer = Buffer.from(fileResponse.data);
-      const rawText = buffer.toString('utf-8', 0, 3000);
-      fileContent = rawText
+      fileContent = buffer.toString('utf-8', 0, 3000)
         .replace(/[^\x20-\x7E\n\r\t]/g, ' ')
         .replace(/\s+/g, ' ')
         .trim()
@@ -76,10 +71,8 @@ router.post('/describe-file', auth, async (req, res) => {
     }
 
     const prompt = fileContent.length > 50
-      ? `Write a short college notes marketplace listing for filename "${fileName}". Mention subject, topics, semester. Max 80 words. Only the description.\n\nContent: ${fileContent}`
-      : `Write a short college notes marketplace listing for filename "${fileName}". Mention subject, topics, semester. Max 80 words. Only the description.`
-
-    console.log('Calling Groq with model: openai/gpt-oss-20b')
+      ? `Write a short college notes marketplace listing description. Filename: "${fileName}". Mention subject, topics, semester. Max 80 words. Write ONLY the description.\n\nContent: ${fileContent}`
+      : `Write a short college notes marketplace listing description. The file is named "${fileName}". Guess the subject and topics from the filename. Mention which semester students would find it useful. Max 80 words. Write ONLY the description, be specific and helpful.`
 
     const response = await groq.chat.completions.create({
       model: 'openai/gpt-oss-20b',
@@ -89,12 +82,18 @@ router.post('/describe-file', auth, async (req, res) => {
 
     console.log('Raw response:', response.choices[0].message.content)
 
-    const description = cleanResponse(response.choices[0].message.content);
-    console.log('Cleaned description:', description);
+    let description = cleanResponse(response.choices[0].message.content);
+
+    // ← Fix: if description is empty use a default
+    if (!description || description.length < 10) {
+      description = `Study material — ${fileName.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ')}. Useful notes for engineering students. Contact seller for more details.`
+    }
+
+    console.log('Final description:', description);
     res.json({ description });
 
   } catch (err) {
-    console.log('File AI FULL error:', err)
+    console.log('File AI error:', err.message);
     res.status(500).json({ msg: err.message });
   }
 });
