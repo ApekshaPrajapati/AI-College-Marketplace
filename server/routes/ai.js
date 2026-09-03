@@ -51,7 +51,9 @@ router.post('/describe-file', auth, async (req, res) => {
       return res.status(400).json({ msg: 'No file URL provided' });
     }
 
-    const fileName = decodeURIComponent(fileUrl.split('/').pop().replace(/^\d+-/, ''));
+    const fileName = decodeURIComponent(
+      fileUrl.split('/').pop().replace(/^\d+-/, '')
+    );
     console.log('Filename:', fileName);
 
     let fileContent = '';
@@ -77,20 +79,23 @@ router.post('/describe-file', auth, async (req, res) => {
       ? `Write a short college notes marketplace listing for filename "${fileName}". Mention subject, topics, semester. Max 80 words. Only the description.\n\nContent: ${fileContent}`
       : `Write a short college notes marketplace listing for filename "${fileName}". Mention subject, topics, semester. Max 80 words. Only the description.`
 
+    console.log('Calling Groq with model: openai/gpt-oss-20b')
+
     const response = await groq.chat.completions.create({
-      model: 'openai/gpt-oss-20b',      // ✅ updated text model
+      model: 'openai/gpt-oss-20b',
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 200,
     });
 
+    console.log('Raw response:', response.choices[0].message.content)
+
     const description = cleanResponse(response.choices[0].message.content);
-    console.log('Generated description:', description);
+    console.log('Cleaned description:', description);
     res.json({ description });
 
   } catch (err) {
-    console.log('File AI error:', err.message);
+    console.log('File AI FULL error:', err)
     res.status(500).json({ msg: err.message });
   }
 });
-
 module.exports = router;
